@@ -31,8 +31,8 @@ df.printSchema()
 
 # 4. Transformação (Filtrar e Adicionar Coluna)
 # Filtra funcionários com salário > 3500 e cria uma coluna de 'Bônus' (10% do salário)
-df_filtrado = df.filter(col("Valor") > 3500) \
-                .withColumn("Bonus", round(col("Valor") * 0.10, 2))
+df_filtrado = df.filter(col("Salario") > 3500) \
+                .withColumn("Bonus", round(col("Salario") * 0.10, 2))
 
 print("\n--- 2. DataFrame Filtrado (Salário > 3500) com Coluna 'Bonus' ---")
 df_filtrado.show()
