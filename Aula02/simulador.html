@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de MapReduce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .container-content {
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="container-content w-full bg-white shadow-xl rounded-2xl p-8 space-y-8">
+        <header class="text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Simulador de Contagem de Palavras</h1>
+            <p class="text-lg text-gray-600">Este site executa uma simulação in-browser do processo de MapReduce.</p>
+        </header>
+
+        <section class="space-y-4">
+            <h2 class="text-2xl font-semibold text-gray-700">1. Entrada de Dados</h2>
+            <div class="relative">
+                <textarea id="inputText" class="w-full h-40 p-4 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-300 resize-none" placeholder="Insira seu texto aqui."></textarea>
+            </div>
+            <button id="runButton" class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50">
+                Executar MapReduce
+            </button>
+        </section>
+
+        <section id="resultsSection" class="space-y-6 hidden">
+            <div class="space-y-4">
+                <h2 class="text-2xl font-semibold text-gray-700">2. Mapeamento e Agrupamento</h2>
+                <div id="mapperOutput" class="bg-gray-50 border border-gray-200 rounded-xl p-4 overflow-x-auto h-48 whitespace-nowrap">
+                    <p class="text-gray-500">Resultados do mapeamento e agrupamento serão exibidos aqui.</p>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h2 class="text-2xl font-semibold text-gray-700">3. Redução (Contagem Final)</h2>
+                <div id="reducerOutput" class="bg-gray-50 border border-gray-200 rounded-xl p-4 h-48 overflow-y-auto">
+                    <p class="text-gray-500">Resultados da redução serão exibidos aqui.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-sm text-gray-500 mt-8 pt-4 border-t border-gray-200">
+            Simulador de MapReduce | Criado com JavaScript e Tailwind CSS
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const runButton = document.getElementById('runButton');
+            const inputText = document.getElementById('inputText');
+            const resultsSection = document.getElementById('resultsSection');
+            const mapperOutputDiv = document.getElementById('mapperOutput');
+            const reducerOutputDiv = document.getElementById('reducerOutput');
+
+            const tokenize = (text) => {
+                return text.toLowerCase().match(/\b\w+\b/g) || [];
+            };
+
+            class TokenizerMapper {
+                map(value) {
+                    const words = tokenize(value);
+                    const pairs = [];
+                    for (const word of words) {
+                        pairs.push({ key: word, value: 1 });
+                    }
+                    return pairs;
+                }
+            }
+
+            class IntSumReducer {
+                reduce(key, values) {
+                    let sum = 0;
+                    for (const value of values) {
+                        sum += value;
+                    }
+                    return { key: key, value: sum };
+                }
+            }
+
+            const runMapReduce = () => {
+                const input = inputText.value;
+                if (!input.trim()) {
+                    alert('Por favor, insira algum texto para processar.');
+                    return;
+                }
+
+                resultsSection.classList.remove('hidden');
+                mapperOutputDiv.innerHTML = '<div class="text-gray-500 animate-pulse">Processando Mapeamento...</div>';
+                reducerOutputDiv.innerHTML = '<div class="text-gray-500 animate-pulse">Aguardando Redução...</div>';
+
+                setTimeout(() => {
+                    const mapper = new TokenizerMapper();
+                    const mappedPairs = mapper.map(input);
+                    const mapperOutputString = mappedPairs.map(pair => `(${pair.key}, ${pair.value})`).join(', ');
+                    mapperOutputDiv.innerHTML = `<span class="text-gray-900">${mapperOutputString}</span>`;
+
+                    const groupedData = mappedPairs.reduce((acc, current) => {
+                        if (!acc[current.key]) {
+                            acc[current.key] = [];
+                        }
+                        acc[current.key].push(current.value);
+                        return acc;
+                    }, {});
+
+                    const reducer = new IntSumReducer();
+                    const finalResults = [];
+
+                    for (const key in groupedData) {
+                        if (groupedData.hasOwnProperty(key)) {
+                            const result = reducer.reduce(key, groupedData[key]);
+                            finalResults.push(result);
+                        }
+                    }
+
+                    reducerOutputDiv.innerHTML = finalResults.map(result => 
+                        `<p class="text-gray-900"><span class="font-semibold text-blue-600">${result.key}</span>: ${result.value}</p>`
+                    ).join('');
+
+                }, 500);
+            };
+
+            runButton.addEventListener('click', runMapReduce);
+        });
+    </script>
+
+</body>
+</html>

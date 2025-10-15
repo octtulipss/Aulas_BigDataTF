@@ -1,0 +1,2 @@
+O Html é um simulador didático de MapReduce implementado em JavaScript. Ele permite que os usuários insiram um texto, execute o processo de MapReduce e visualize os resultados das etapas de mapeamento e redução de forma interativa. 
+O código é estruturado para ser simples e fácil de entender, facilitando o aprendizado dos conceitos fundamentais do MapReduce.

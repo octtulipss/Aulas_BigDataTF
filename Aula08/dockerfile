@@ -1,0 +1,8 @@
+FROM johnsnowlabs/sparknlp:sparkocr_jupyter_manual
+
+WORKDIR /app
+
+COPY script_nlp.py /app/
+COPY tweets_dataset.json /app/
+
+CMD ["python3", "script_nlp.py"]
